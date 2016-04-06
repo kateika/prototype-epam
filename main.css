@@ -2,8 +2,7 @@ html, body {
   height: 100%;
 }
 
-
-form {
+main {
   width: 50%;
   position: absolute;
   top: 50%;
@@ -13,19 +12,28 @@ form {
   transform: translate(-50%, -50%);
 }
 
-.select-field {
-  float: left;
-  margin-left: 100px;
-  padding-top: 20px;
-  padding-bottom: 40px;
+.selectFields {
+  display: flex;
+  justify-content: center;
+/*  align-items: center;*/
 }
 
-.to {
+.selectField {
+  padding-top: 20px;
+  padding-bottom: 40px;
+  margin-right: 150px;
+}
+
+.selectField:last-of-type {
+  margin-right: 0;
+}
+
+.selectField h2 {
   margin-top: 0;
   margin-bottom: 5px;
 }
 
-[name="to"] {
+#to {
   width: 180px;
   height: 40px;
 }
@@ -37,9 +45,7 @@ label[for="from"] {
   margin-bottom: 5px;
 }
 
-#map-wrapper {
-  clear: both;
-  width: 100%;
+#mapWrapper {
   height: 50px;
   background-color: azure;
 }

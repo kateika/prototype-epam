@@ -8,25 +8,29 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <form action="smth.php" method="post">
-      <div class="select-field">
-        <label for="from">Откуда</label>
-        <input type="text" id="from" name="from" autocomplete="off"/>
-      </div>
-      <div class="select-field">
-        <h2 class="to">Куда</h2>
-        <select name="to">
-          <option>K1/1</option>53.927042, 27.681246
-          <option>K1/3</option>
-          <option>K3V</option>
-          <option>K10</option>
-          <option>R40</option>
-        </select>
-      </div>
-      <div id="map-wrapper">
+    <main>
+      <form action="smth.php" method="post">
+        <div class="selectFields">
+          <div class="selectField">
+            <label for="from">Откуда</label>
+            <input type="text" id="from" name="from" autocomplete="off"/>
+          </div>
+          <div class="selectField">
+            <h2>Куда</h2>
+            <select name="to" id="to">
+              <option>K1/1</option>53.927042, 27.681246
+              <option>K1/3</option>
+              <option>K3V</option>
+              <option>K10</option>
+              <option>R40</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <div id="mapWrapper">
         <div id="map"></div>
       </div>
-    </form>
+    </main>
     <script src="main.js"></script>
   </body>
 </html>
