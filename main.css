@@ -1,21 +1,27 @@
 html, body {
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 main {
+  height: 100%;
+}
+
+form {
   width: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  margin: 0 auto;
 }
 
 .selectFields {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
   justify-content: center;
-/*  align-items: center;*/
 }
 
 .selectField {
@@ -45,7 +51,6 @@ label[for="from"] {
   margin-bottom: 5px;
 }
 
-#mapWrapper {
-  height: 50px;
-  background-color: azure;
+#map {
+  height: 100%;
 }
