@@ -13,13 +13,13 @@
         <div class="selectFields">
           <div class="selectField">
             <label for="home">Откуда</label>
-            <input type="text" id="home" name="home" autocomplete="off"/>
+            <input type="text" id="home" name="home" placeholder="" autocomplete="off" autofocus/>
           </div>
           <div class="selectField">
             <h2>Куда</h2>
             <select name="offices" id="offices">
               <option></option>
-              <option data-lat="53.927005" data-lng="27.681607">K1/1</option>
+              <option data-lat="53.927005" data-lng="27.681607">K1</option>
               <option data-lat="53.928395" data-lng="27.685406">K3V</option>
               <option data-lat="53.926179" data-lng="27.689690">K10</option>
               <option data-lat="53.892293" data-lng="27.646367">R40</option>
@@ -37,7 +37,7 @@
         throw new Error("Please save Google Maps API key to localStorage.apiKey");
       }
       var s = document.createElement("script");
-      s.src = "https://maps.googleapis.com/maps/api/js?key=" + localStorage.apiKey + "&callback=initMap";
+      s.src = "https://maps.googleapis.com/maps/api/js?key=" + localStorage.apiKey + "&callback=initMap&libraries=places";
       s.async = true;
       s.defer = true;
       document.body.appendChild(s);
