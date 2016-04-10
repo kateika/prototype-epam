@@ -1,6 +1,6 @@
 
 var input = document.getElementById('home');
-var map, autocomplete, homeMarker, officeMarker;
+var map, autocomplete, homeMarker, officeMarker, homeLocation, officeLocation;
 
 //Create map with center in Minsk
 function initMap() {
@@ -31,9 +31,15 @@ for(var i = 0; i < officesOptions.length; i++) {
 
 //Place marker when office was chosen
 officesSelect.addEventListener("change", chooseOffice);
+
 function chooseOffice(event) {
   if(officesSelect.value == "") return;
-  setMarker(officeMarker, offices[officesSelect.value]);
+  // wrap {lng:, lat:} LatLngLiteral into LatLng class for use in LatLngBounds
+  officeLocation = new google.maps.LatLng(offices[officesSelect.value]);
+  
+  setMarker(officeMarker, officeLocation);
+  
+  if(homeLocation) fitBounds();
 }
 
 
@@ -41,8 +47,11 @@ function setHome() {
   // Get the place details from the autocomplete object
   var place = autocomplete.getPlace();
   if(place.geometry == undefined) return;
+  homeLocation = place.geometry.location;
   
-  setMarker(homeMarker, place.geometry.location);
+  setMarker(homeMarker, homeLocation);
+  
+  if(officeLocation) fitBounds();
 }
 
 //Set marker from coordinates object
@@ -53,5 +62,12 @@ function setMarker(marker, location) {
   marker.setPosition(location);
 }
 
+function fitBounds() {
+  var bounds = new google.maps.LatLngBounds();
+  //extend is for recogtize sw and ne coords
+  bounds.extend(homeLocation);
+  bounds.extend(officeLocation);
+  map.fitBounds(bounds);
+}
 var form = document.getElementsByTagName("form")[0];
 form.addEventListener("submit", function() {event.preventDefault()})
