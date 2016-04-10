@@ -39,12 +39,12 @@ form {
   margin-bottom: 5px;
 }
 
-#to {
+#offices {
   width: 180px;
   height: 40px;
 }
 
-label[for="from"] {
+label[for="home"] {
   display: block;
   font-weight: bold;
   font-size: 24px;
@@ -52,5 +52,6 @@ label[for="from"] {
 }
 
 #map {
-  height: 100%;
+  height: -webkit-calc(100% - 117px);
+  height: calc(100% - 117px);
 }
