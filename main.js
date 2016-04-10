@@ -1,33 +1,54 @@
-var input = document.getElementById('home');
-var map, geocoder, autocomplete, homeMarker, officeMarker, homeLocation, officeLocation;
-
-//Create map with center in Minsk
-function initMap() {
-  //Use it later to fetch address
-  geocoder = new google.maps.Geocoder;
-
-  map = new google.maps.Map(document.getElementById('map'), {
+//Should be called after Google Maps API is loaded
+function AddressPicker(input, select, map, callback) {
+  this.callback = callback;
+  
+  //Create map with center in Minsk
+  this.map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 53.9056591, lng: 27.5598183},
     zoom: 12
   });
-  map.addListener("click", markerHandler);
+  this.map.addListener("click", this.markerHandler.bind(this));
+  
+  //Use it later to fetch address
+  this.geocoder = new google.maps.Geocoder;
+  
+  //Create object with offices latitude and longitude
+  var officesOptions = select.getElementsByTagName("option");
+  this.offices = {};
+
+  for(var i = 0; i < officesOptions.length; i++) {
+    this.offices[officesOptions[i].value] = {lat: +officesOptions[i].getAttribute("data-lat"), lng: +officesOptions[i].getAttribute("data-lng")};
+  }
+
+  //Place marker when office was chosen
+  select.addEventListener("change", this.chooseOffice.bind(this));
   
   //This is for autocomplete address
-  autocomplete = new google.maps.places.Autocomplete(input);
-  autocomplete.addListener('place_changed', setHome);
+  this.autocomplete = new google.maps.places.Autocomplete(input);
+  this.autocomplete.addListener('place_changed', this.setHome.bind(this));
   
   //Create reusable markers
-  homeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false, draggable: true});
-  homeMarker.addListener("dragend", markerHandler);
+  this.homeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: this.map, visible: false, draggable: true});
+  this.homeMarker.addListener("dragend", this.markerHandler.bind(this));
   
-  officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false});  
+  this.officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: this.map, visible: false});  
+  
+  this.input = input;
+  var form = input.closest("form");
+  if(form) form.addEventListener("submit", function() {
+    event.preventDefault(); 
+  });
+  
+  this.officeLocation = null;
+  this.homeLocation = null;
 }
 
-//Handle click on map and drag on marker and updates home marker
-function markerHandler(event) {
-  setHomeLocation(event.latLng);
 
-  geocoder.geocode({'location': homeLocation}, function(results, status) {
+//Handle click on map and drag on marker and updates home marker
+AddressPicker.prototype.markerHandler = function(event) {
+  this.setHomeLocation(event.latLng);
+  var input = this.input;
+  this.geocoder.geocode({'location': this.homeLocation}, function(results, status) {
     if (status === google.maps.GeocoderStatus.OK) {
       input.value = results[0].formatted_address;
     } else {
@@ -36,60 +57,66 @@ function markerHandler(event) {
   });
 }
 
-
-//Create object with offices latitude and longitude
-var officesSelect = document.getElementById("offices");
-var officesOptions = officesSelect.getElementsByTagName("option");
-var offices = {};
-
-for(var i = 0; i < officesOptions.length; i++) {
-  offices[officesOptions[i].value] = {lat: +officesOptions[i].getAttribute("data-lat"), lng: +officesOptions[i].getAttribute("data-lng")};
-}
-
-//Place marker when office was chosen
-officesSelect.addEventListener("change", chooseOffice);
-
-function chooseOffice(event) {
-  if(officesSelect.value == "") return;
-  
-  // wrap {lng:, lat:} LatLngLiteral into LatLng class for use in LatLngBounds
-  officeLocation = new google.maps.LatLng(offices[officesSelect.value]);
-  setMarker(officeMarker, officeLocation);
-  
-  if(homeLocation) fitBounds();
-}
-
-
 //Get home location from the autocomplete
-function setHome() {
-  var place = autocomplete.getPlace();
+AddressPicker.prototype.setHome = function() {
+  var place = this.autocomplete.getPlace();
   if(place.geometry == undefined) return;
-  setHomeLocation(place.geometry.location);
-}
+  this.setHomeLocation(place.geometry.location);
+};
+
 
 //Remember location, set marker, fit bounds
-function setHomeLocation(location) {
-  homeLocation = location;
-  setMarker(homeMarker, homeLocation);
-  if(officeLocation) fitBounds();
+AddressPicker.prototype.setHomeLocation = function(location) {
+  this.homeLocation = location;
+  this.setMarker(this.homeMarker, this.homeLocation);
+  this.checkAddresses();
+}
+
+//Set marker for office
+AddressPicker.prototype.chooseOffice = function(event) {
+  var select = event.target;
+  if(select.value == "") return;
+  
+  // wrap {lng:, lat:} LatLngLiteral into LatLng class for use in LatLngBounds
+  this.officeLocation = new google.maps.LatLng(this.offices[select.value]);
+  this.setMarker(this.officeMarker, this.officeLocation);
+  this.checkAddresses();
 }
 
 //Set marker from coordinates object
-function setMarker(marker, location) {
-  map.setCenter(location);
-  map.setZoom(17);
+AddressPicker.prototype.setMarker = function(marker, location) {
+  this.map.setCenter(location);
+  this.map.setZoom(17);
   marker.setVisible(true);
   marker.setPosition(location);
 }
 
-//Zoom to fit home and office addresses on the map
-function fitBounds() {
-  var bounds = new google.maps.LatLngBounds();
-  //extend is for recogtize sw and ne coords
-  bounds.extend(homeLocation);
-  bounds.extend(officeLocation);
-  map.fitBounds(bounds);
+//Check if both addresses are selected
+AddressPicker.prototype.checkAddresses = function() {
+  if(this.homeLocation && this.officeLocation) {
+    this.fitBounds();
+    this.callback(this.homeLocation, this.officeLocation);
+  }
 }
 
-var form = document.getElementsByTagName("form")[0];
-form.addEventListener("submit", function() {event.preventDefault()})
+//Zoom to fit home and office addresses on the map
+AddressPicker.prototype.fitBounds = function() {
+  var bounds = new google.maps.LatLngBounds();
+  //extend is for recogtize sw and ne coords
+  bounds.extend(this.homeLocation);
+  bounds.extend(this.officeLocation);
+  this.map.fitBounds(bounds);
+}
+
+
+//Example
+//this function is set as callback on Google Maps API load
+function init() {
+  var input = document.getElementById("home");
+  var select = document.getElementById("offices");
+  var map = document.getElementById("map");
+  var onAddressSelect = function(home, office) {
+    console.log(home, office);
+  }
+  var addressPicker = new AddressPicker(input, select, map, onAddressSelect);
+}
