@@ -1,6 +1,6 @@
 
 var input = document.getElementById('home');
-var map, autocomplete;
+var map, autocomplete, homeMarker, officeMarker;
 
 //Create map with center in Minsk
 function initMap() {
@@ -13,6 +13,11 @@ function initMap() {
   autocomplete = new google.maps.places.Autocomplete(input);
   
   autocomplete.addListener('place_changed', setHome);
+  
+  //Create reusable markers
+  homeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false, draggable: true});
+  
+  officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false});
 }
 
 //Create object with offices latitude and longitude
@@ -28,22 +33,24 @@ for(var i = 0; i < officesOptions.length; i++) {
 officesSelect.addEventListener("change", chooseOffice);
 function chooseOffice(event) {
   if(officesSelect.value == "") return;
-  setMarker(offices[officesSelect.value]);
+  setMarker(officeMarker, offices[officesSelect.value]);
 }
 
 
 function setHome() {
-  // Get the place details from the autocomplete object.
+  // Get the place details from the autocomplete object
   var place = autocomplete.getPlace();
   if(place.geometry == undefined) return;
   
-  setMarker(place.geometry.location);
+  setMarker(homeMarker, place.geometry.location);
 }
 
-function setMarker(location) {
+//Set marker from coordinates object
+function setMarker(marker, location) {
   map.setCenter(location);
   map.setZoom(17);
-  new google.maps.Marker({position: location, map: map}); 
+  marker.setVisible(true);
+  marker.setPosition(location);
 }
 
 var form = document.getElementsByTagName("form")[0];
