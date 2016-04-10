@@ -1,14 +1,16 @@
-
 var input = document.getElementById('home');
-var map, autocomplete, homeMarker, officeMarker, homeLocation, officeLocation;
-var x;
+var map, geocoder, autocomplete, homeMarker, officeMarker, homeLocation, officeLocation;
 
 //Create map with center in Minsk
 function initMap() {
+  //Use it later to fetch address
+  geocoder = new google.maps.Geocoder;
+
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 53.9056591, lng: 27.5598183},
     zoom: 12
   });
+  map.addListener("click", markerHandler);
   
   //This is for autocomplete address
   autocomplete = new google.maps.places.Autocomplete(input);
@@ -16,29 +18,23 @@ function initMap() {
   
   //Create reusable markers
   homeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false, draggable: true});
+  homeMarker.addListener("dragend", markerHandler);
   
-  officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false});
-  
-  //Fill input with address
-  var geocoder = new google.maps.Geocoder;
-
-  map.addListener("click", function(event) {
-    homeLocation = event.latLng;
-    setMarker(homeMarker, homeLocation);
-    if(officeLocation) fitBounds();
-    
-    geocoder.geocode({'location': homeLocation}, function(results, status) {
-      if (status === google.maps.GeocoderStatus.OK) {
-        input.value = results[0].formatted_address;
-      } else {
-        console.warn("Geocode error", status);
-      }
-    });
-  });  
+  officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: map, visible: false});  
 }
 
+//Handle click on map and drag on marker and updates home marker
+function markerHandler(event) {
+  setHomeLocation(event.latLng);
 
-
+  geocoder.geocode({'location': homeLocation}, function(results, status) {
+    if (status === google.maps.GeocoderStatus.OK) {
+      input.value = results[0].formatted_address;
+    } else {
+      console.warn("Geocode error", status);
+    }
+  });
+}
 
 
 //Create object with offices latitude and longitude
@@ -55,23 +51,26 @@ officesSelect.addEventListener("change", chooseOffice);
 
 function chooseOffice(event) {
   if(officesSelect.value == "") return;
+  
   // wrap {lng:, lat:} LatLngLiteral into LatLng class for use in LatLngBounds
   officeLocation = new google.maps.LatLng(offices[officesSelect.value]);
-  
   setMarker(officeMarker, officeLocation);
   
   if(homeLocation) fitBounds();
 }
 
 
+//Get home location from the autocomplete
 function setHome() {
-  // Get the place details from the autocomplete object
   var place = autocomplete.getPlace();
   if(place.geometry == undefined) return;
-  homeLocation = place.geometry.location;
-  
+  setHomeLocation(place.geometry.location);
+}
+
+//Remember location, set marker, fit bounds
+function setHomeLocation(location) {
+  homeLocation = location;
   setMarker(homeMarker, homeLocation);
-  
   if(officeLocation) fitBounds();
 }
 
