@@ -3,7 +3,7 @@ function AddressPicker(input, select, map, callback) {
   this.callback = callback;
   
   //Create map with center in Minsk
-  this.map = new google.maps.Map(document.getElementById('map'), {
+  this.map = new google.maps.Map(map, {
     center: {lat: 53.9056591, lng: 27.5598183},
     zoom: 12
   });
