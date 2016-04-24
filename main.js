@@ -7,8 +7,15 @@ function AddressPicker(input, select, map, callback) {
     center: {lat: 53.9056591, lng: 27.5598183},
     zoom: 12
   });
-  this.map.addListener("click", this.markerHandler.bind(this));
   
+  //This is for route
+  this.directionsService = new google.maps.DirectionsService();
+  this.directionsDisplay = new google.maps.DirectionsRenderer({draggable: true, suppressMarkers: true});
+  this.directionsDisplay.setMap(this.map);
+  
+  this.map.addListener("click", this.markerHandler.bind(this));
+  this.directionsDisplay.addListener("directions_changed", this.directionChanged.bind(this));
+                                     
   //Use it later to fetch address
   this.geocoder = new google.maps.Geocoder;
   
@@ -57,21 +64,24 @@ AddressPicker.prototype.markerHandler = function(event) {
   var self = this;
   this.geocoder.geocode(geocodeSettings, function(results, status) {
     if (status === google.maps.GeocoderStatus.OK) {
-      // check is clicked place inside Minsk
-      var foundMinsk = false;
-      for(var i = 0; i < results.length; i++) {
-        if (results[i].place_id === "ChIJ02oeW9PP20YR2XC13VO4YQs") {
-          foundMinsk = true;
-          break;
-        }
-      }
       
-      if(foundMinsk) {
+      //NO RESCTRICTIONS FOR NOW
+      
+      // check is clicked place inside Minsk (if we want)
+//      var foundMinsk = false;
+//      for(var i = 0; i < results.length; i++) {
+//        if (results[i].place_id === "ChIJ02oeW9PP20YR2XC13VO4YQs") {
+//          foundMinsk = true;
+//          break;
+//        }
+//      }
+//      
+//      if(foundMinsk) {
         input.value = results[0].formatted_address;
         self.setHomeLocation(event.latLng);
-      } else {
-        alert("Only Minsk supported");
-      }
+//      } else {
+//        alert("Only Minsk supported");
+//      }
 
     } else {
       console.warn("Geocode error", status);
@@ -83,7 +93,6 @@ AddressPicker.prototype.markerHandler = function(event) {
 AddressPicker.prototype.setHome = function() {
   var place = this.autocomplete.getPlace();
   if(place.geometry == undefined) return;
-  console.log(place);
   this.setHomeLocation(place.geometry.location);
 };
 
@@ -118,19 +127,40 @@ AddressPicker.prototype.setMarker = function(marker, location) {
 AddressPicker.prototype.checkAddresses = function() {
   if(this.homeLocation && this.officeLocation) {
     this.fitBounds();
-    this.callback(this.homeLocation, this.officeLocation);
+    this.calcRoute();
   }
 }
 
 //Zoom to fit home and office addresses on the map
 AddressPicker.prototype.fitBounds = function() {
   var bounds = new google.maps.LatLngBounds();
-  //extend is for recogtize sw and ne coords
+  
+  //extend is for recognize sw and ne coords
   bounds.extend(this.homeLocation);
   bounds.extend(this.officeLocation);
   this.map.fitBounds(bounds);
 }
 
+//Route
+AddressPicker.prototype.calcRoute = function() {
+  var start = this.homeLocation;
+  var end = this.officeLocation;
+  var request = {
+    origin: start,
+    destination: end,
+    travelMode: google.maps.TravelMode.DRIVING
+  };
+  var self = this;
+  this.directionsService.route(request, function(result, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      self.directionsDisplay.setDirections(result);
+    }
+  });
+}
+
+AddressPicker.prototype.directionChanged = function() {
+  this.callback(this.homeLocation, this.officeLocation, this.directionsDisplay.getDirections());
+}
 
 //Example
 //this function is set as callback on Google Maps API load
@@ -138,8 +168,8 @@ function init() {
   var input = document.getElementById("home");
   var select = document.getElementById("offices");
   var map = document.getElementById("map");
-  var onAddressSelect = function(home, office) {
-    console.log(home, office);
+  var onAddressSelect = function(home, office, route) {
+    console.log(home, office, route);
   }
   var addressPicker = new AddressPicker(input, select, map, onAddressSelect);
 }
