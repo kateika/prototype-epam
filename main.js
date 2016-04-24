@@ -23,8 +23,11 @@ function AddressPicker(input, select, map, callback) {
   //Place marker when office was chosen
   select.addEventListener("change", this.chooseOffice.bind(this));
   
-  //This is for autocomplete address
-  this.autocomplete = new google.maps.places.Autocomplete(input);
+  //This is for autocomplete address inside Minsk
+  var ne = {lat: 53.966693, lng: 27.742595};
+  var sw = {lat: 53.835620, lng: 27.406353};
+  var minskBounds = new google.maps.LatLngBounds(sw, ne);
+  this.autocomplete = new google.maps.places.Autocomplete(input, {bounds: minskBounds});
   this.autocomplete.addListener('place_changed', this.setHome.bind(this));
   
   //Create reusable markers
@@ -46,11 +49,30 @@ function AddressPicker(input, select, map, callback) {
 
 //Handle click on map and drag on marker and updates home marker
 AddressPicker.prototype.markerHandler = function(event) {
-  this.setHomeLocation(event.latLng);
+  var clickedLocation = event.latLng;
   var input = this.input;
-  this.geocoder.geocode({'location': this.homeLocation}, function(results, status) {
+  var geocodeSettings = {
+    'location': clickedLocation
+  };
+  var self = this;
+  this.geocoder.geocode(geocodeSettings, function(results, status) {
     if (status === google.maps.GeocoderStatus.OK) {
-      input.value = results[0].formatted_address;
+      // check is clicked place inside Minsk
+      var foundMinsk = false;
+      for(var i = 0; i < results.length; i++) {
+        if (results[i].place_id === "ChIJ02oeW9PP20YR2XC13VO4YQs") {
+          foundMinsk = true;
+          break;
+        }
+      }
+      
+      if(foundMinsk) {
+        input.value = results[0].formatted_address;
+        self.setHomeLocation(event.latLng);
+      } else {
+        alert("Only Minsk supported");
+      }
+
     } else {
       console.warn("Geocode error", status);
     }
@@ -61,6 +83,7 @@ AddressPicker.prototype.markerHandler = function(event) {
 AddressPicker.prototype.setHome = function() {
   var place = this.autocomplete.getPlace();
   if(place.geometry == undefined) return;
+  console.log(place);
   this.setHomeLocation(place.geometry.location);
 };
 

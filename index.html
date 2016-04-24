@@ -35,7 +35,7 @@
         throw new Error("Please save Google Maps API key to localStorage.apiKey");
       }
       var s = document.createElement("script");
-      s.src = "https://maps.googleapis.com/maps/api/js?key=" + localStorage.apiKey + "&callback=init&libraries=places";
+      s.src = "https://maps.googleapis.com/maps/api/js?key=" + localStorage.apiKey + "&callback=init&libraries=places&language=ru";
       s.async = true;
       s.defer = true;
       document.body.appendChild(s);
