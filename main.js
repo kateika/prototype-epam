@@ -12,9 +12,9 @@ function AddressPicker(input, select, map, callback) {
   this.directionsService = new google.maps.DirectionsService();
   this.directionsDisplay = new google.maps.DirectionsRenderer({draggable: true, suppressMarkers: true});
   this.directionsDisplay.setMap(this.map);
-  
-  this.map.addListener("click", this.markerHandler.bind(this));
+    
   this.directionsDisplay.addListener("directions_changed", this.directionChanged.bind(this));
+  this.map.addListener("click", this.markerHandler.bind(this));
                                      
   //Use it later to fetch address
   this.geocoder = new google.maps.Geocoder;
@@ -38,10 +38,12 @@ function AddressPicker(input, select, map, callback) {
   this.autocomplete.addListener('place_changed', this.setHome.bind(this));
   
   //Create reusable markers
-  this.homeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: this.map, visible: false, draggable: true});
+  var homeMarkerImage = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
+  var officeMarkerImage = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  this.homeMarker = new google.maps.Marker({position: {lat: 53.9056591, lng: 27.5598183}, map: this.map, visible: true, draggable: true, icon: homeMarkerImage });
   this.homeMarker.addListener("dragend", this.markerHandler.bind(this));
   
-  this.officeMarker = new google.maps.Marker({position: {lng: 0, lat: 0}, map: this.map, visible: false});  
+  this.officeMarker = new google.maps.Marker({position: {lat: 53.927235, lng: 27.681695}, map: this.map, visible: true, icon: officeMarkerImage });  
   
   this.input = input;
   var form = input.closest("form");
@@ -52,7 +54,6 @@ function AddressPicker(input, select, map, callback) {
   this.officeLocation = null;
   this.homeLocation = null;
 }
-
 
 //Handle click on map and drag on marker and updates home marker
 AddressPicker.prototype.markerHandler = function(event) {
