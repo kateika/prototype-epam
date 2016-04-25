@@ -39,6 +39,11 @@ form {
   margin-bottom: 5px;
 }
 
+.selectField input {
+  height: 40px;
+  box-sizing: border-box;
+}
+
 #offices {
   width: 180px;
   height: 40px;
@@ -54,4 +59,5 @@ label[for="home"] {
 #map {
   height: -webkit-calc(100% - 117px);
   height: calc(100% - 117px);
+  cursor: pointer;
 }
