@@ -39,14 +39,8 @@ form {
   margin-bottom: 5px;
 }
 
-.selectField input {
-  height: 40px;
-  box-sizing: border-box;
-}
-
 #offices {
   width: 180px;
-  height: 40px;
 }
 
 label[for="home"] {
